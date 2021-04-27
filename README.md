@@ -35,7 +35,8 @@ from faker import Faker
 
 from erclient.address import list_address_states
 from erclient.adsource import list_adsources
-from erclient.candidate import create_candidate_rest as create_candidate
+from erclient.candidate import create_candidate_rest as create_candidate, change_password_rest, lookup_rest, \
+    validate_rest, Candidate
 from erclient.foldergroup import list_foldergroups
 from erclient.position import list_posted_positions
 
@@ -58,7 +59,6 @@ try:
 except IndexError:
     position_id = None
 portfolio_url = fake.url()
-resume = None
 if os.path.exists('resume.pdf'):
     with open('resume.pdf', 'rb') as resume:
         candidate = create_candidate(
@@ -79,23 +79,64 @@ if os.path.exists('resume.pdf'):
             resume=resume
         )
 else:
-        candidate = create_candidate(
-            first=fname,
-            last=lname,
-            folder_group_id=foldergroup.foldergroup_id,
-            title=title,
-            adsource=adsource,
-            email_address=email,
-            phone_number=phone,
-            address_1=fake.street_address(),
-            city=fake.city(),
-            state_id=state.address_state_id,
-            postal_code=zipcode,
-            password=password,
-            position_id=position_id,
-            portfolio_url=portfolio_url,
-            resume=None
-        )
+    candidate = create_candidate(
+        first=fname,
+        last=lname,
+        folder_group_id=foldergroup.foldergroup_id,
+        title=title,
+        adsource=adsource,
+        email_address=email,
+        phone_number=phone,
+        address_1=fake.street_address(),
+        city=fake.city(),
+        state_id=state.address_state_id,
+        postal_code=zipcode,
+        password=password,
+        position_id=position_id,
+        portfolio_url=portfolio_url,
+        resume=None
+    )
 toc = time.perf_counter()
-print('Candidate {name}, ID#{id} created in {duration} seconds'.format(name=candidate, id=candidate.candidate_id, duration=toc - tic))
+print('Candidate {name}, ID#{id} created in {duration} seconds. Login: {login}, Password: {password}'.format(
+    name=candidate,
+    id=candidate.candidate_id,
+    duration=toc - tic,
+    login=candidate.email_address,
+    password=password
+))
+tic = time.perf_counter()
+mycan = lookup_rest(candidate.email_address)
+toc = time.perf_counter()
+print('Looking up candidate {mycan}, ID#{id} via email address using REST api: {email} in {duration} seconds'.format(
+    mycan=lookup_rest(mycan.email_address),
+    id=mycan.candidate_id,
+    email=mycan.email_address,
+    duration=toc - tic)
+)
+tic = time.perf_counter()
+myval = validate_rest(mycan.email_address, password)
+toc = time.perf_counter()
+print('Validating username {email} and password "{password}" against REST api: {result}  in {duration} seconds'.format(
+    email=mycan.email_address,
+    password=password,
+    result=(True if isinstance(myval, Candidate) else False),
+    duration=toc - tic))
+newpass = fake.password()
+tic = time.perf_counter()
+changepw = change_password_rest(mycan.candidate_id, newpass)
+print('Changing password for username {email} from "{oldpassword}" to "{newpassword}" in {duration} seconds'.format(
+    email=mycan.email_address,
+    oldpassword=password,
+    newpassword=newpass,
+    duration=toc - tic))
+tic = time.perf_counter()
+myval = validate_rest(mycan.email_address, newpass)
+toc = time.perf_counter()
+print(
+    'Validating username {email} and new password "{password}" against REST api: {result}  in {duration} seconds'.format(
+        email=mycan.email_address,
+        password=newpass,
+        result=(True if isinstance(myval, Candidate) else False),
+        duration=toc - tic))
+
 ```
