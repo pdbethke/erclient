@@ -1,6 +1,11 @@
 # erclient
 Client for Erecruit V2 API (Json/OAuth) with fallback to REST API
 
+Installation: 
+```
+pip install erclient
+```
+
 Requires that the following variables be set in the local ENV:
 
 ER_BASE_URL (url, base URL for API 2.0, eg "https://erecruit.example.com/")
