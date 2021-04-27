@@ -27,7 +27,7 @@ ER_ESTAFF_PASSWORD (string, eg "MyPassword")
 
 ER_ESTAFF_USERNAME (string, eg "service@Example")
 
-Example Script: (generates a random, fully populated and authenticated candidate record with optional PDF resume parsing):
+Example Script: (generates a random, fully populated and authenticated candidate record with optional PDF resume parsing. It then looks up that new profile using the REST api, validates the profile against the username and password, changes the password, and re-validates it against the new password, with timings.):
 
 ```
 import random, os, time
