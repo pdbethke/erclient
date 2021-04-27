@@ -1,0 +1,1 @@
+from erclient.candidate import Candidate
