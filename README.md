@@ -140,3 +140,15 @@ print(
         duration=toc - tic))
 
 ```
+Output:
+```
+Candidate Andrew Peters, ID#3329977 created in 13.25360290199751 seconds. Login: karen77@example.com, Password: K*6Gx3mu%g
+
+Looking up candidate Andrew Peters, ID#3329977 via email address using REST api: karen77@example.com in 1.537556262977887 seconds
+
+Validating username karen77@example.com and password "K*6Gx3mu%g" against REST api: True  in 1.463470447983127 seconds
+
+Changing password for username karen77@example.com from "K*6Gx3mu%g" to "+33Rd$dOzE" in -0.0009151159902103245 seconds
+
+Validating username karen77@example.com and new password "+33Rd$dOzE" against REST api: True  in 1.6288100390229374 seconds
+```
