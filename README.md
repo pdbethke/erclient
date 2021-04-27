@@ -140,7 +140,7 @@ print(
         duration=toc - tic))
 
 ```
-Output:
+Sample Output:
 ```
 Candidate Andrew Peters, ID#3329977 created in 13.25360290199751 seconds. Login: karen77@example.com, Password: K*6Gx3mu%g
 
