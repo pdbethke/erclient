@@ -2,11 +2,13 @@ from functools import lru_cache
 
 from .base import ErConnector
 from .customfield import get_custom_field_by_key
+from .candidate import delete_candidate_custom_field_rest
 
 gender_choices = [(0, 'Male'), (1, 'Female'), (3, 'Other'), (4, 'Decline') ]
 # not in api, convenience #
 gender_pronoun_choices = ['he/him/his','she/her/hers','they/them/theirs','ze/zir/zirs', 'ze/hir/hirs']
 gender_pronoun_field = 'Pronouns'
+not_self_identify_field = 'Self Identified?'
 
 class EEOC(object):
 
@@ -25,7 +27,10 @@ class EEOC(object):
         self.disability_status_id = None
         self.gender = None
         self.use_pronouns = use_pronouns
-        self.pronoun = None
+        self.pronouns = None
+        self.pronouns_current = None
+        self.not_self_identify = None
+        self.not_self_identify_current = None
         self.disability_status_list = disability_status_list
         self.veteran_status_list = veteran_status_list
         self.ethnicity_list = ethnicity_list
@@ -36,20 +41,27 @@ class EEOC(object):
             # Allows it to be populated by list methods without an additional fetch
             self.data = data
         self.pronoun_field = None
+        self.not_self_identify_field = None
         self.populate_from_data()
 
     def fetch_and_populate_pronoun_field(self):
         try:
-            self.pronoun_field = get_custom_field_by_key('Candidate', 'Pronouns', self.candidate_id)
-            self.pronoun = self.pronoun_field.value
-        except:
+            self.pronoun_field = get_custom_field_by_key('Candidate', gender_pronoun_field, self.candidate_id)
+            self.pronouns = self.pronouns_current = self.pronoun_field.value
+        except Exception as e:
+            print(e)
+            pass
+    def fetch_and_populate_not_self_identify_field(self):
+        try:
+            self.not_self_identify_field = get_custom_field_by_key('Candidate', not_self_identify_field, self.candidate_id)
+            self.not_self_identify = self.not_self_identify_current = self.not_self_identify_field.value
+        except Exception as e:
+            print(e)
             pass
 
     def refresh(self):
         self.data = get_candidate_eeoc_by_candidate_id(self.candidate_id).data
         self.populate_from_data()
-        if self.use_pronouns:
-            self.fetch_and_populate_pronoun_field()
 
     def populate_from_data(self):
         self.gender_id = self.data.get('Gender', None)
@@ -60,6 +72,12 @@ class EEOC(object):
         self.ethnicity_id = self.data.get('EthnicityID', None)
         self.veteran_status_id = self.data.get('VeteranStatusID', None)
         self.disability_status_id = self.data.get('DisabilityStatusID', None)
+        self.fetch_and_populate_not_self_identify_field()
+        if self.use_pronouns:
+            try:
+                self.fetch_and_populate_pronoun_field()
+            except:
+                pass
 
     def ethnicity(self):
         value_list = self.ethnicity_list if self.ethnicity_list else list_choices_ethnicity()
@@ -107,18 +125,57 @@ class EEOC(object):
                     'Error: DisabilityStatusID must be one of the following values:{values}'.format(
                         values=','.join([str(x) for x in disability_status_values])))
         payload = self.data
+        if self.use_pronouns:
+            self.save_pronouns()
+        self.save_not_identify()
         payload['Gender'] = self.gender_id
         payload['EthnicityID'] = self.ethnicity_id
         payload['VeteranStatusID'] = self.veteran_status_id
-        payload['DisabilityStatusID'] = self.veteran_status_id
+        payload['DisabilityStatusID'] = self.disability_status_id
         response = connector.send_request(
             path=url,
             verb='PUT',
             payload=payload
         )
         self.refresh()
-
         return self
+
+    def save_pronouns(self):
+        if not self.pronouns:
+            # Deleting a value previously stored
+            delete_candidate_custom_field_rest(self.candidate_id, gender_pronoun_field)
+        else:
+            self.pronoun_field.value = self.pronouns
+            self.pronoun_field.save(obj_id=self.candidate_id)
+
+    def clear_pronouns(self):
+        try:
+            delete_candidate_custom_field_rest(self.candidate_id, gender_pronoun_field)
+        except:
+            pass
+
+    def clear(self):
+        if self.gender_id:
+            self.gender_id = 4
+            self.gender = None
+        if self.veteran_status_id:
+            self.veteran_status_id = 6
+        if self.ethnicity_id:
+            self.ethnicity_id = 17
+        if self.disability_status_id:
+            self.disability_status_id = 3
+        if self.pronouns:
+            self.pronouns = None
+            self.clear_pronouns()
+
+    def save_not_identify(self):
+        if self.not_self_identify is True:
+            self.clear()
+            self.not_self_identify_field.value = 'True'
+            self.not_self_identify_field.save(obj_id=self.candidate_id)
+        elif self.not_self_identify is False:
+            self.not_self_identify_field.value = 'False'
+            self.not_self_identify_field.save(obj_id=self.candidate_id)
 
 def get_candidate_eeoc_by_candidate_id(candidate_id, use_pronouns=False):
     connector = ErConnector()  # 2.0 API

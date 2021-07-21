@@ -14,7 +14,7 @@ CLASSIFIERS = []
 
 setup(
     name='erclient',
-    version=0.47,
+    version=0.53,
     description='Client for Erecruit API 2.0 with Fallback to 1.0',
     author='siteshell.net',
     author_email='pdbethke@siteshell.net',
@@ -24,6 +24,7 @@ setup(
     platforms=['OS Independent'],
     install_requires=REQUIREMENTS,
     classifiers=CLASSIFIERS,
+    long_description_content_type='text/markdown',
     long_description=open('README.md').read(),
     include_package_data=True,
     zip_safe=False,

@@ -1385,6 +1385,33 @@ def list_candidate_custom_fields_rest(candidate_id, conversion_map=None, return_
                     out.append(elem)
     return out
 
+def delete_candidate_custom_field_rest(candidate_id, field_name):
+    value = get_custom_field_value_id_rest(candidate_id, field_name)
+    if value:
+        connector = ErConnector(api_version='rest')
+        path = 'CustomField/{entityid}/{customvalueid}/Delete'.format(
+            entityid=connector.rest_entity_id,
+            customvalueid=value,
+        )
+        params = {}
+        return connector.send_request(
+            path,
+            payload=params,
+            verb='POST',
+        )['Message']
+    else:
+        return None
+
+def get_custom_field_value_id_rest(candidate_id, field_name):
+    try:
+        fields = (list_candidate_custom_fields_rest(candidate_id))
+        value = ([x for x in fields if (x['@Name'] == field_name)][0]['@ValueID'])
+        if int(value) > 0:
+            return int(value)
+        else:
+            return None
+    except Exception as e:
+        return None
 
 def parse_rest_result(result):
     parsed = str(result['Message']).split('|')
@@ -1436,8 +1463,6 @@ def change_login_rest(candidate_id, newlogin, note=None):
         payload=params,
         verb='POST',
     )
-
-    print(result)
     status = int(parse_rest_result(result)[0])
     message = parse_rest_result(result)[0]
     if status == 100 and note:
