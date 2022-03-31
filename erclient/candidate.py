@@ -655,6 +655,9 @@ def get_remote_candidate(candidate_id):
     )
     return Candidate(candidate_id=response['ID'], data=response)
 
+def get_candidate_by_id(candidate_id):
+    return get_remote_candidate(candidate_id)
+
 
 def list_candidate_communication_methods(candidate_id, about_id=None, is_primary=False):
     # API 2.0
