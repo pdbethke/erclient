@@ -17,8 +17,12 @@ class AdSource(object):
         self.populate_from_data()
 
     def populate_from_data(self):
-        self.name = self.data.get('Name', None)
-        self.requires_additional_info = self.data.get('RequiresAdditionalInfo', None)
+        if self.data and self.data['SourceName']:
+            self.name = self.data.get('SourceName', None)
+            self.requires_additional_info = self.data.get('RequiredAdditionalInfo', None)
+        else:
+            self.name = self.data.get('Name', None)
+            self.requires_additional_info = self.data.get('RequiresAdditionalInfo', None)
 
 def list_adsources(abouttype_id):
     # API 2.0
@@ -43,3 +47,15 @@ def get_adsource_id_from_name(name, abouttype_id=None):
 def get_adsource_from_name(name, abouttype_id=None):
 
     return [x for x in list_adsources(abouttype_id) if x.name == name][0]
+
+def get_adsource_for_obj(obj_id, abouttype_id):
+    # API 2.0
+    connector = ErConnector()
+    url = 'AdSource/{abouttype_id}/{Id}'.format(
+        abouttype_id=abouttype_id,
+    Id=obj_id)
+    response = connector.send_request(
+        path=url,
+        verb='GET',
+    )
+    return AdSource(adsource_id=response['AdSourceID'], data=response)
