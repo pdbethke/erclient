@@ -14,7 +14,7 @@ CLASSIFIERS = []
 
 setup(
     name='erclient',
-    version=0.53,
+    version='0.54',
     description='Client for Erecruit API 2.0 with Fallback to 1.0',
     author='siteshell.net',
     author_email='pdbethke@siteshell.net',
