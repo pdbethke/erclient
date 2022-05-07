@@ -6,7 +6,8 @@ REQUIREMENTS = [
     'requests',
     'requests-oauthlib',
     'requests-toolbelt',
-    'xmltodict'
+    'xmltodict',
+    'hubspot-api-client'
 ]
 
 # https://pypi.python.org/pypi?%3Aaction=list_classifiers

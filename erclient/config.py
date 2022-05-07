@@ -15,6 +15,8 @@ estaff_password = os.environ.get('ER_ESTAFF_PASSWORD', None)
 estaff_base_url = os.environ.get('ER_ESTAFF_BASE_URL', None)
 estaff_api_base_url = os.environ.get('ER_ESTAFF_API_BASE_URL', None)
 
+hubspot_api_key = os.environ.get('HUBSPOT_API_KEY', None)
+
 if os.environ.get('ER_TOKEN_URL', None):
     token_url = os.environ.get('ER_TOKEN_URL')
 else:
